@@ -37,44 +37,44 @@ def configure_interface():
 
 	import os
 
-	if ( os.system("ifconfig rtap0 %s" % cmd_redirect ) == 0 ):
-		logging.info("rtap0 interface available, good")
-	else:
-		logging.info("rtap0 interface not available")
-		# Need to reconfigure the ipw2200 module
-		if ( os.system("lsmod | grep ^ipw2200 %s" % cmd_redirect ) != 0 ):
-			logging.warn("ipw2200 was not already loaded")
-		else:
-			logging.info("ipw2200 was loaded, unloading now")
-			if ( os.system("rmmod ipw2200 %s" % cmd_redirect) != 0 ):
-				logging.error("Unable to remove ipw2200")
-				exit(1)
+    # if ( os.system("ifconfig rtap0 %s" % cmd_redirect ) == 0 ):
+	# 	logging.info("rtap0 interface available, good")
+	# else:
+	# 	logging.info("rtap0 interface not available")
+	# 	# Need to reconfigure the ipw2200 module
+	# 	if ( os.system("lsmod | grep ^ipw2200 %s" % cmd_redirect ) != 0 ):
+	# 		logging.warn("ipw2200 was not already loaded")
+	# 	else:
+	# 		logging.info("ipw2200 was loaded, unloading now")
+	# 		if ( os.system("rmmod ipw2200 %s" % cmd_redirect) != 0 ):
+	# 			logging.error("Unable to remove ipw2200")
+	# 			exit(1)
 
-		if ( os.system("modprobe ipw2200 rtap_iface=1 %s" % cmd_redirect) != 0 ):
-			logging.error("Unable to (re)load ipw2200 module with the rtap0 interface enabled.\nPerhaps your ipw2200 module has not been patched?")
-			exit(1)
-		else:
-			logging.info("Reloaded ipw2200 with rtap0 interface")
+	# 	if ( os.system("modprobe ipw2200 rtap_iface=1 %s" % cmd_redirect) != 0 ):
+	# 		logging.error("Unable to (re)load ipw2200 module with the rtap0 interface enabled.\nPerhaps your ipw2200 module has not been patched?")
+	# 		exit(1)
+	# 	else:
+	# 		logging.info("Reloaded ipw2200 with rtap0 interface")
 
 
-		if ( os.system("ifconfig rtap0 %s" % cmd_redirect) != 0 ):
-			logging.error("rtap0 interface still not available after module reload, quitting!")
-			exit(1)
+	# 	if ( os.system("ifconfig rtap0 %s" % cmd_redirect) != 0 ):
+	# 		logging.error("rtap0 interface still not available after module reload, quitting!")
+	# 		exit(1)
 
-	if( os.system("ifconfig rtap0 up") != 0 ):
-		logging.error("Unable to bring-up rtap0, quitting")
+	# if( os.system("ifconfig rtap0 up") != 0 ):
+	# 	logging.error("Unable to bring-up rtap0, quitting")
+	# 	exit(1)
+
+	if( os.system("ifconfig wlan0 up") != 0 ):
+		logging.error("Unable to bring-up wlan0, quitting")
 		exit(1)
 
-	if( os.system("ifconfig eth1 up") != 0 ):
-		logging.error("Unable to bring-up eth1, quitting")
-		exit(1)
-
-	if( os.system("iwconfig eth1 mode managed channel 0 essid any") != 0 ):
+	if( os.system("iwconfig wlan0 mode managed channel 0 essid any") != 0 ):
 		logging.error("Unable to set interface mode to unassociated")
 		exit(1)
 
 	import time
-	p = os.popen("iwlist eth1 scan")
+	p = os.popen("iwlist wlan0 scan")
 	p.read()	# Discard output
 	p.close()
 	logging.info("Waiting for network list to be populated")
@@ -122,7 +122,7 @@ def get_list_of_networks():
 		pattern = re.compile('^.*IE: WPA Version (\d+)')
 		))
 
-	p = os.popen("iwlist eth1 scan")
+	p = os.popen("iwlist wlan0 scan")
 	c = p.readlines()
 	p.close()
 
@@ -190,7 +190,7 @@ def check_connection():
 	"""
 	import subprocess
 
-	retcode = subprocess.call("dhclient -1 eth1", shell=True)
+	retcode = subprocess.call("dhclient -1 wlan0", shell=True)
 	if retcode == 0:
 		return True
 	else:
@@ -220,34 +220,34 @@ def crack_network(network):
 				print "Leaving network in configured state and quitting"
 				sys.exit()
 	
-	print
-	print "Attempting injection attack"
-	attach_to_network(network, "s:fakekey")
+    # print
+	# print "Attempting injection attack"
+	# attach_to_network(network, "s:fakekey")
 
-	airodump = CapturePackets(network)
-	airodump.start()
+	# airodump = CapturePackets(network)
+	# airodump.start()
 
-	while airodump.status["s"] == 0:
-		time.sleep(1.0)
-	logging.debug("Packets: %s" % airodump.status["s"])
+	# while airodump.status["s"] == 0:
+	# 	time.sleep(1.0)
+	# logging.debug("Packets: %s" % airodump.status["s"])
 
-	while True:
-		time.sleep(1.0)
-		filelist = glob.glob("%s-*.ivs" % network["ESSID"])
-		if len( filelist ) > 0:
-			break
+	# while True:
+	# 	time.sleep(1.0)
+	# 	filelist = glob.glob("%s-*.ivs" % network["ESSID"])
+	# 	if len( filelist ) > 0:
+	# 		break
 
-	aircrack = CrackPackets(network)
-	aircrack.start()
+	# aircrack = CrackPackets(network)
+	# aircrack.start()
 
-	while aircrack.isAlive():
-		time.sleep(1.0)
-		logging.info("Captured %s packets" % airodump.status.__repr__())
-	logging.info("Cracker died")
-	print aircrack.screen
+	# while aircrack.isAlive():
+	# 	time.sleep(1.0)
+	# 	logging.info("Captured %s packets" % airodump.status.__repr__())
+	# logging.info("Cracker died")
+	# print aircrack.screen
 
-	aircrack.join()
-	airodump.exit()
+	# aircrack.join()
+	# airodump.exit()
 
 def attach_to_network(network, key):
 	"""
@@ -261,7 +261,7 @@ def attach_to_network(network, key):
 	# print()
 	network["key"] = key
 
-	os.system("iwconfig eth1 essid %(ESSID)s mode Managed channel %(channel)s "
+	os.system("iwconfig wlan0 essid %(ESSID)s mode Managed channel %(channel)s "
 			"key %(key)s ap %(BSSID)s" % network)
 
 	# Now wait for the interface to confirm it is no longer "unassociated"
@@ -269,7 +269,7 @@ def attach_to_network(network, key):
 	while retries:
 		retries -= 1
 		time.sleep(1)
-		if( os.system("iwconfig eth1 | head -n1 | grep 'IEEE 802.11' %s" % cmd_redirect) == 0 ):
+		if( os.system("iwconfig wlan0 | head -n1 | grep 'IEEE 802.11' %s" % cmd_redirect) == 0 ):
 			# Success!
 			logging.info("Associated with network using key '%s'" % network["key"])
 			return
